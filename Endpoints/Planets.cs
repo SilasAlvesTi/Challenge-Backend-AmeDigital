@@ -21,9 +21,41 @@ namespace Planetas_StarWars.Endpoints
                 return Results.Created($"/{planet.Id}", planet);
             });
 
-            planets.MapGet("/{id}", async (PlanetsContext context, Guid id) =>
+            planets.MapGet("/{id:Guid}", async (PlanetsContext context, Guid id) =>
             {
-                return await context.Planets.FindAsync(id);
+                var planet = await context.Planets.FirstAsync();
+                
+                if (planet == null)
+                {
+                    return Results.NotFound();
+                }
+                
+                return Results.Ok(planet);
+            });
+
+            planets.MapGet("/{name}", async (PlanetsContext context, string name) =>
+            {
+                var planet = await context.Planets.Where((Planet x) => x.Name == name).FirstAsync();
+                
+                if (planet == null)
+                {
+                    return Results.NotFound();
+                }
+
+                return Results.Ok(planet);
+            });
+
+            planets.MapDelete("/{id:guid}", async (PlanetsContext context, Guid id) => {
+                var planet = await context.Planets.FindAsync(id);
+
+                if (planet == null)
+                {
+                    return Results.NotFound();
+                }
+
+                context.Planets.Remove(planet);
+                await context.SaveChangesAsync();
+                return Results.NoContent();
             });
         }
     }
