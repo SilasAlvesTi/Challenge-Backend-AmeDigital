@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Planetas_StarWars.Data;
 using Planetas_StarWars.Endpoints;
+using Planetas_StarWars.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,8 @@ builder.Services.AddDbContext<PlanetsContext>(options => options.UseMySql(connec
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<HttpClient>();
+builder.Services.AddScoped<MovieAppearanceService>();
 
 var app = builder.Build();
 

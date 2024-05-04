@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Planetas_StarWars.Data;
 using Planetas_StarWars.Models;
+using Planetas_StarWars.Services;
+using Planetas_StarWars.Services.Exceptions;
 
 namespace Planetas_StarWars.Endpoints
 {
@@ -15,7 +18,23 @@ namespace Planetas_StarWars.Endpoints
                 return await context.Planets.ToListAsync();
             });
 
-            planets.MapPost("/", async (PlanetsContext context, Planet planet) => {
+            planets.MapPost("/", async (PlanetsContext context, PlanetInsert planetInsert, MovieAppearanceService movieAppearanceService) => {
+                Planet planet = new Planet(Guid.NewGuid(), planetInsert.Name, planetInsert.Wheater, planetInsert.Terrain);
+                try
+                {
+                    var totalAppearances = await movieAppearanceService.GetMovieAppearanceTimesAsync(planetInsert.Name);
+                    planet.AddMovieAppearances(totalAppearances);
+                }
+                catch (APIRequestException e)
+                {
+                    var problemDetails = new ProblemDetails
+                    {
+                        Status = 400,
+                        Title = "An error occurred while processing your request.",
+                        Detail = e.Message
+                    };
+                    return Results.BadRequest(problemDetails);
+                }
                 await context.Planets.AddAsync(planet);
                 await context.SaveChangesAsync();
                 return Results.Created($"/{planet.Id}", planet);
