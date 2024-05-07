@@ -1,0 +1,36 @@
+services:
+  planets-api-mysql:
+    image: mysql:8.0
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - "planets-api-mysql:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_USER: silas
+      MYSQL_PASSWORD: silas0147
+    networks:
+      planets-networks:
+    ports:
+      - "3307:3306"
+
+  api:
+    container_name: planets-api
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 5004:8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on: ["planets-api-mysql"]
+    networks:
+      planets-networks:
+
+
+volumes:
+  planets-api-mysql:
+
+networks:
+  planets-networks:
+    driver: bridge
